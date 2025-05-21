@@ -23,13 +23,31 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = theme_dark_tertiary,
     primaryContainer = theme_dark_primaryContainer,
     onPrimaryContainer = theme_dark_onPrimaryContainer,
+    secondaryContainer = theme_dark_secondaryContainer,
+    onSecondaryContainer = theme_dark_onSecondaryContainer,
+    tertiaryContainer = theme_dark_tertiaryContainer,
+    onTertiaryContainer = theme_dark_onTertiaryContainer,
+    error = theme_dark_error,
+    errorContainer = theme_dark_errorContainer,
+    onError = theme_dark_onError,
+    onErrorContainer = theme_dark_onErrorContainer,
     background = theme_dark_background,
     surface = theme_dark_surface,
     onPrimary = theme_dark_onPrimary,
     onSecondary = theme_dark_onSecondary,
     onTertiary = theme_dark_onTertiary,
     onBackground = theme_dark_onBackground,
-    onSurface = theme_dark_onSurface
+    onSurface = theme_dark_onSurface,
+    scrim = theme_dark_scrim,
+
+    surfaceVariant = theme_dark_surfaceVariant,
+    onSurfaceVariant = theme_dark_onSurfaceVariant,
+    outline = theme_dark_outline,
+    outlineVariant = theme_dark_outlineVariant,
+    inversePrimary = theme_dark_inversePrimary,
+    surfaceTint = theme_dark_surfaceTint,
+    inverseSurface = theme_dark_inverseSurface,
+    inverseOnSurface = theme_dark_inverseOnSurface
 
 )
 
@@ -39,13 +57,30 @@ private val LightColorScheme = lightColorScheme(
     tertiary = theme_light_tertiary,
     primaryContainer = theme_light_primaryContainer,
     onPrimaryContainer = theme_light_onPrimaryContainer,
+    secondaryContainer = theme_light_secondaryContainer,
+    onSecondaryContainer = theme_light_onSecondaryContainer,
+    tertiaryContainer = theme_light_tertiaryContainer,
+    onTertiaryContainer = theme_light_onTertiaryContainer,
+    error = theme_light_error,
+    errorContainer = theme_light_errorContainer,
+    onError = theme_light_onError,
+    onErrorContainer = theme_light_onErrorContainer,
     background = theme_light_background,
     surface = theme_light_surface,
     onPrimary = theme_light_onPrimary,
     onSecondary = theme_light_onSecondary,
     onTertiary = theme_light_onTertiary,
     onBackground = theme_light_onBackground,
-    onSurface = theme_light_onSurface
+    onSurface = theme_light_onSurface,
+    scrim = theme_light_scrim,
+    surfaceVariant = theme_light_surfaceVariant,
+    onSurfaceVariant = theme_light_onSurfaceVariant,
+    outline = theme_light_outline,
+    outlineVariant = theme_light_outlineVariant,
+    inversePrimary = theme_light_inversePrimary,
+    surfaceTint = theme_light_surfaceTint,
+    inverseSurface = theme_light_inverseSurface,
+    inverseOnSurface = theme_light_inverseOnSurface
 
 )
 

@@ -1,8 +1,6 @@
 package com.example.sparcs_new.ui.theme.screen
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,7 +16,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,43 +31,44 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.sparcs_new.R
-import com.example.sparcs_new.ViewModel.GetEventState
+import com.example.sparcs_new.viewModel.GetEventState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.sparcs_new.DTO.EventResponseDTO
-import com.example.sparcs_new.ViewModel.AppViewModelFactory
-import com.example.sparcs_new.ViewModel.GetAttendeesViewModel
-import com.example.sparcs_new.ViewModel.GetUserEventsViewModel
-import com.example.sparcs_new.ViewModel.GetUserViewModel
+import com.example.sparcs_new.SparcsScreen
+import com.example.sparcs_new.viewModel.AppViewModelFactory
+import com.example.sparcs_new.viewModel.GetAttendeesViewModel
+import com.example.sparcs_new.viewModel.GetEventsViewModel
+import com.example.sparcs_new.viewModel.GetUserJoinedEventsViewModel
+import com.example.sparcs_new.viewModel.GetUserViewModel
 
 @Composable
-fun MyEvent(getUserEventsViewModel: GetUserEventsViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current)),
-            getUserViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+fun MyEvent(navController : NavHostController
     ) {
+    val getUserJoinedEventViewModel: GetUserJoinedEventsViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val getUserViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val eventState by getUserJoinedEventViewModel.eventState.collectAsState()
+
     LaunchedEffect(Unit) {
-        getUserViewModel.GetUserInfo("user_query_value", "nick_query_value")
+        getUserViewModel.getUserInfo("user_query_value", "nick_query_value")
+        getUserJoinedEventViewModel.getJoinedEventInfo()
     }
-        val eventState by getUserEventsViewModel.eventState.collectAsState()
-        val user_id by getUserViewModel.userid.collectAsState()
-        Log.d("strimg", user_id)
-        Scaffold{
+
+
+       Scaffold{
             Column (
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ){
-                getUserEventsViewModel.getUserEventInfo(user_id)
                 when (eventState) {
-                    GetEventState.Idle -> {
-
-                    }
-
+                    GetEventState.Idle -> {}
                     GetEventState.Loading -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                         }
                     }
-
                     is GetEventState.Success -> {
                         val events = (eventState as GetEventState.Success).response
                         LazyColumn(
@@ -79,12 +77,11 @@ fun MyEvent(getUserEventsViewModel: GetUserEventsViewModel = viewModel(factory =
                                 .fillMaxSize()
                                 .padding(dimensionResource(R.dimen.padding_large))
                         ) {
-                            items(events) { event ->
-                                InfoMyItem(event = event)
+                            items(events){ event ->
+                                InfoMyItem(event = event, navController = navController)
                             }
                         }
                     }
-
                     is GetEventState.Error -> {
                         val errorMessage = (eventState as GetEventState.Error).message
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -93,17 +90,15 @@ fun MyEvent(getUserEventsViewModel: GetUserEventsViewModel = viewModel(factory =
                     }
                 }
             }
-
         }
-
-
     }
-
-
 //modifier.clickable
 @Composable
-fun InfoMyItem(event : EventResponseDTO){
+fun InfoMyItem(event : EventResponseDTO,
+               navController:NavHostController){
     val openDialog = remember { mutableStateOf(false) }
+    val getEventsViewModel: GetEventsViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val offset by getEventsViewModel.offset.collectAsState()
 
     Card(
         modifier = Modifier
@@ -113,14 +108,12 @@ fun InfoMyItem(event : EventResponseDTO){
                 openDialog.value = true
             }
     ) {
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.tertiaryContainer)
-
         ) {
 
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -134,10 +127,7 @@ fun InfoMyItem(event : EventResponseDTO){
                         .padding(top = dimensionResource(R.dimen.padding_small))
                         .align(Alignment.Center)
                 )
-
             }
-
-
             Column(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.onSecondary)
@@ -163,33 +153,14 @@ fun InfoMyItem(event : EventResponseDTO){
         }
     }
     if (openDialog.value) {
-
-        val getAttendeesViewModel: GetAttendeesViewModel = viewModel(
-            factory = AppViewModelFactory(LocalContext.current))
-        LaunchedEffect(event.event_id) {
-            getAttendeesViewModel.loadAttendees(event.event_id)
-        }
-
-        val attendeeNicknames by getAttendeesViewModel.attendeeNicknames.collectAsState()
+        val getAttendeesViewModel: GetAttendeesViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+        getAttendeesViewModel.loadAttendees(event.event_id)
         val isLoading by getAttendeesViewModel.isLoading.collectAsState()
-        val error by getAttendeesViewModel.error.collectAsState()
+        if (!isLoading) {
+            val route = SparcsScreen.createRoute(event.event_id, offset)
+            navController.navigate(route)
 
-        DialogPop(
-            onDismissRequest = { openDialog.value = false },
-            title = event.title,
-            time = event.datetime,
-            location = event.location,
-            description = event.description,
-            attendees = attendeeNicknames,
-            isLoading = isLoading,
-            error = error
-        )
-
+        }
     }
-}
-@Preview
-@Composable
-fun MyEventPreview(){
-    Surface(modifier = Modifier.fillMaxSize()) { MyEvent() }
 
 }

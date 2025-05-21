@@ -2,12 +2,16 @@ package com.example.sparcs_new.ui.theme.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -26,39 +30,58 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.sparcs_new.R
 import com.example.sparcs_new.SparcsScreen
-import com.example.sparcs_new.ViewModel.AppViewModelFactory
-import com.example.sparcs_new.ViewModel.LoginState
-import com.example.sparcs_new.ViewModel.LoginViewModel
-import com.example.sparcs_new.ViewModel.SignupViewModel
+import com.example.sparcs_new.viewModel.AppViewModelFactory
+import com.example.sparcs_new.viewModel.LoginState
+import com.example.sparcs_new.viewModel.LoginViewModel
+import com.example.sparcs_new.viewModel.SignupViewModel
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 
 @Composable
 fun SignupScreen(
-    signViewModel: SignupViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current)),
-    loginViewModel: LoginViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current)),
     navController: NavHostController
 ) {
+    val signViewModel: SignupViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val loginViewModel: LoginViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
 
-
-    Surface (color = MaterialTheme.colorScheme.background ){
+    Surface(color = MaterialTheme.colorScheme.background) {
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var nickname by remember { mutableStateOf("") }
         val currentLoginState by signViewModel.loginState.collectAsState()
 
-        Column(modifier = Modifier.fillMaxSize(),
+        val usernameInteractionSource = remember { MutableInteractionSource() }
+        val usernameIsFocused by usernameInteractionSource.collectIsFocusedAsState()
+
+        val passwordInteractionSource = remember { MutableInteractionSource() }
+        val passwordIsFocused by passwordInteractionSource.collectIsFocusedAsState()
+
+        val nicknameInteractionSource = remember { MutableInteractionSource() }
+        val nicknameIsFocused by nicknameInteractionSource.collectIsFocusedAsState()
+
+        val passwordFocusRequester = remember { FocusRequester() }
+        val nicknameFocusRequester = remember { FocusRequester() }
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center) {
+            verticalArrangement = Arrangement.Center
+        ) {
             Card(
                 shape = RoundedCornerShape(8.dp),
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.onSecondary),
@@ -70,7 +93,7 @@ fun SignupScreen(
                         shape = RoundedCornerShape(4.dp)
                     )
             ) {
-                Column (modifier = Modifier.background(MaterialTheme.colorScheme.onSecondary)){
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.onSecondary)) {
                     Text(
                         text = "회원가입",
                         style = MaterialTheme.typography.headlineSmall,
@@ -83,18 +106,42 @@ fun SignupScreen(
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.scrim
                     )
-                    TextField(
-                        value = username,
-                        onValueChange = {username = it},
-                        label = { Text(
-                            text = "이름 입력",
-                            style = MaterialTheme.typography.bodySmall
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        BasicTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.secondary),
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            interactionSource = usernameInteractionSource,
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = {
+                                    passwordFocusRequester.requestFocus()
+                                }
+                            ),
+                            decorationBox = { innerTextField ->
+                                if (username.isEmpty() && !usernameIsFocused) {
+                                    Text(
+                                        text = "이름 입력",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.scrim
+                                    )
+                                }
+                                innerTextField()
+                            }
                         )
-                        },
-                        textStyle = TextStyle(color = MaterialTheme.colorScheme.scrim),
-                        colors = TextFieldDefaults.colors(MaterialTheme.colorScheme.onSecondary)
-
-                    )
+                    }
 
                     Text(
                         text = "비밀번호",
@@ -102,17 +149,43 @@ fun SignupScreen(
                         color = MaterialTheme.colorScheme.scrim,
                         modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
                     )
-                    TextField(
-                        value = password,
-                        onValueChange = {password = it},
-                        label = { Text(
-                            text = "비밀 번호 입력(문자, 숫자, 특수문자 포함 8~20자)",
-                            style = MaterialTheme.typography.bodySmall
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        BasicTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.secondary),
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(passwordFocusRequester),
+                            interactionSource = passwordInteractionSource,
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = {
+                                    nicknameFocusRequester.requestFocus()
+                                }
+                            ),
+                            decorationBox = { innerTextField ->
+                                if (password.isEmpty() && !passwordIsFocused) {
+                                    Text(
+                                        text = "비밀 번호 입력(문자, 숫자, 특수문자 포함 8~20자)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.scrim
+                                    )
+                                }
+                                innerTextField()
+                            }
                         )
-                        },
-                        textStyle = TextStyle(color = MaterialTheme.colorScheme.scrim),
-                        colors = TextFieldDefaults.colors(MaterialTheme.colorScheme.onSecondary)
-                    )
+                    }
 
                     Text(
                         text = "닉네임",
@@ -120,21 +193,47 @@ fun SignupScreen(
                         color = MaterialTheme.colorScheme.scrim,
                         modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
                     )
-                    TextField(
-                        value = nickname,
-                        onValueChange = {nickname = it},
-                        label = { Text(
-                            text = "닉네임 입력",
-                            style = MaterialTheme.typography.bodySmall
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        BasicTextField(
+                            value = nickname,
+                            onValueChange = { nickname = it },
+                            textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.secondary),
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(nicknameFocusRequester),
+                            interactionSource = nicknameInteractionSource,
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    signViewModel.performSignup(username, password, nickname)
+                                }
+                            ),
+                            decorationBox = { innerTextField ->
+                                if (nickname.isEmpty() && !nicknameIsFocused) {
+                                    Text(
+                                        text = "닉네임 입력.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.scrim
+                                    )
+                                }
+                                innerTextField()
+                            }
                         )
-                        },
-                        textStyle = TextStyle(color = MaterialTheme.colorScheme.scrim),
-                        colors = TextFieldDefaults.colors(MaterialTheme.colorScheme.onSecondary)
-                    )
+                    }
 
                     Button(
                         onClick = {
-                            signViewModel.performSignup(username,password, nickname)
+                            signViewModel.performSignup(username, password, nickname)
                         },
                         enabled = currentLoginState != LoginState.Loading,
                         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
@@ -146,8 +245,8 @@ fun SignupScreen(
                             text = "회원가입",
                             style = MaterialTheme.typography.bodySmall
                         )
-
                     }
+
                     Text(
                         text = "로그인",
                         modifier = Modifier
@@ -157,8 +256,8 @@ fun SignupScreen(
                             },
                         style = MaterialTheme.typography.bodySmall,
                         textDecoration = TextDecoration.Underline,
+                    )
 
-                        )
                     when (currentLoginState) {
                         LoginState.Idle -> Text("Please enter your credentials")
                         LoginState.Loading -> CircularProgressIndicator()
@@ -170,14 +269,14 @@ fun SignupScreen(
                             loginViewModel.loginSuccess()
                             navController.navigate(route = SparcsScreen.Login.name)
                         }
-                        is LoginState.Error -> Text("Signup Failed: ${(currentLoginState as LoginState.Error).message}", color = MaterialTheme.colorScheme.error)
+
+                        is LoginState.Error -> Text(
+                            "Signup Failed: ${(currentLoginState as LoginState.Error).message}",
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
-
-
-
                 }
             }
         }
     }
 }
-

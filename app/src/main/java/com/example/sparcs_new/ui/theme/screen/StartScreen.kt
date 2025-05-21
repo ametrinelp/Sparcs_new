@@ -1,7 +1,9 @@
 package com.example.sparcs_new.ui.theme.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,51 +26,70 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.sparcs_new.DTO.EventResponseDTO
 import com.example.sparcs_new.R
-import com.example.sparcs_new.ViewModel.AppViewModelFactory
-import com.example.sparcs_new.ViewModel.GetAttendeesViewModel
-import com.example.sparcs_new.ViewModel.GetEventState
-import com.example.sparcs_new.ViewModel.GetEventsViewModel
+import com.example.sparcs_new.SparcsScreen
+import com.example.sparcs_new.viewModel.AppViewModelFactory
+import com.example.sparcs_new.viewModel.GetAttendeesViewModel
+import com.example.sparcs_new.viewModel.GetEventState
+import com.example.sparcs_new.viewModel.GetEventsViewModel
+import com.example.sparcs_new.viewModel.GetUserViewModel
 
 
 @Composable
-fun StartScreen(
-    getEventsViewModel: GetEventsViewModel= viewModel(factory = AppViewModelFactory(LocalContext.current))
-    ) {
-    val eventState by getEventsViewModel.eventState.collectAsState()
+fun StartScreen(navController : NavHostController) {
+    val getEventsViewModel: GetEventsViewModel= viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val getUserViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
 
+    val eventState by getEventsViewModel.eventState.collectAsState()
+    val offset by getEventsViewModel.offset.collectAsState()
+    val currentPage by getEventsViewModel.currentPage.collectAsState()
     Scaffold{
         Column (
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ){
-            getEventsViewModel.getEventInfo()
+
+
             when (eventState) {
                 GetEventState.Idle -> {
-
+                    LaunchedEffect(Unit) {
+                        getUserViewModel.getUserInfo("user_query_value", "nick_query_value")
+                        getEventsViewModel.getEventInfo(offset)
+                    }
                 }
-
                 GetEventState.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
-
                 is GetEventState.Success -> {
                     val events = (eventState as GetEventState.Success).response
+
+                    PaginationBar(
+                        currentPage = currentPage,
+                        events = events,
+                        onNext = { getEventsViewModel.goToNextPage() },
+                        onPrev = { getEventsViewModel.goToPreviousPage() }
+                    )
+
                     LazyColumn(
                         contentPadding = it,
                         modifier = Modifier
@@ -76,11 +97,11 @@ fun StartScreen(
                             .padding(dimensionResource(R.dimen.padding_large))
                     ) {
                         items(events) { event ->
-                            EventItem(event = event)
+                            EventItem(event = event, navController = navController, offset = offset)
                         }
+
                     }
                 }
-
                 is GetEventState.Error -> {
                     val errorMessage = (eventState as GetEventState.Error).message
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -88,6 +109,7 @@ fun StartScreen(
                     }
                 }
             }
+
         }
 
     }
@@ -95,29 +117,28 @@ fun StartScreen(
 
 }
 
+
 @Composable
 fun EventItem(
-    event : EventResponseDTO,
-
+    event: EventResponseDTO,
+    navController:NavHostController,
+    offset:Int
 ){
     val openDialog = remember { mutableStateOf(false) }
-
-        Card(
+    Card(
         modifier = Modifier
             .padding(dimensionResource(R.dimen.padding_small))
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(10.dp))
             .clickable {
                 openDialog.value = true
             }
-        ) {
-
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer)
-
         ) {
 
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -144,7 +165,7 @@ fun EventItem(
             ) {
                 Row{
                     EventInformation(
-                        string = event.datetime,
+                        string = formatDateTimeString(event.datetime),
                         icon = painterResource(R.drawable.calendar)
 
                     )
@@ -160,36 +181,26 @@ fun EventItem(
         }
     }
     if (openDialog.value) {
+        val getAttendeesViewModel: GetAttendeesViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+        getAttendeesViewModel.loadAttendees(event.event_id)
 
-        val getAttendeesViewModel: GetAttendeesViewModel = viewModel(
-            factory = AppViewModelFactory(LocalContext.current, event.event_id))
-        LaunchedEffect(event.event_id) {
-            getAttendeesViewModel.loadAttendees(event.event_id)
+        val isLoading by getAttendeesViewModel.isLoading.collectAsState()
+        if (!isLoading) {
+            val route = SparcsScreen.createRoute(event.event_id, offset)
+            navController.navigate(route)
+
         }
 
-        val attendeeNicknames by getAttendeesViewModel.attendeeNicknames.collectAsState()
-        val isLoading by getAttendeesViewModel.isLoading.collectAsState()
-        val error by getAttendeesViewModel.error.collectAsState()
-
-        DialogPop(
-            onDismissRequest = { openDialog.value = false },
-            title = event.title,
-            time = event.datetime,
-            location = event.location,
-            description = event.description,
-            attendees = attendeeNicknames,
-            isLoading = isLoading,
-            error = error
-        )
-
     }
+
 }
 @Composable
 fun EventInformation(
     string: String,
     icon: Painter,
     modifier: Modifier = Modifier,
-    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.scrim
+    color: Color = MaterialTheme.colorScheme.scrim,
+    style: TextStyle = MaterialTheme.typography.bodySmall
 ){
     Row(modifier = modifier,
         verticalAlignment = Alignment.CenterVertically) {
@@ -208,7 +219,7 @@ fun EventInformation(
             Text(
                 text = string,
                 maxLines = 1,
-                style = MaterialTheme.typography.bodySmall,
+                style = style,
                 color = MaterialTheme.colorScheme.scrim,
                 modifier = Modifier.padding(start = dimensionResource(R.dimen.padding_small), end = dimensionResource(R.dimen.padding_small))
 
@@ -218,5 +229,50 @@ fun EventInformation(
         }
 
     }
+
+}
+
+@Composable
+fun PaginationBar(
+    currentPage: Int,
+    events: List<EventResponseDTO>,
+    onNext: () -> Unit,
+    onPrev: () -> Unit
+) {
+    val isPrevEnabled = currentPage > 1
+    val isNextEnabled = events.size >= 10
+
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            "< 이전",
+            modifier = Modifier
+                .clickable(enabled = isPrevEnabled) {
+                    onPrev()
+                }
+                .padding(8.dp),
+            color = if (isPrevEnabled) Color.Black else Color.Gray
+        )
+
+        Text("현재 페이지: $currentPage", modifier = Modifier.padding(8.dp))
+
+        Text(
+            "다음 >",
+            modifier = Modifier
+                .clickable(enabled = isNextEnabled) {
+                    onNext()
+                }
+                .padding(8.dp),
+            color = if (isNextEnabled) Color.Black else Color.Gray
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun preview(){
 
 }

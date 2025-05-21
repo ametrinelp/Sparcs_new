@@ -7,41 +7,35 @@ class DataTokenStore(
     context: Context
 ) {
     private val prefs: SharedPreferences =
-        context.getSharedPreferences("token_prefs", Context.MODE_PRIVATE)
-
-    companion object {
-        private const val ACCESS_TOKEN_KEY = "access_token"
-        private const val REFRESH_TOKEN_KEY = "refresh_token"
-        private const val USER_ID = "user_id"
-    }
+        context.getSharedPreferences("token_prefs", Context.MODE_PRIVATE)!!
 
     fun saveAccessToken(accessToken: String) {
-        prefs.edit().putString(ACCESS_TOKEN_KEY, accessToken).apply()
+        prefs.edit().putString("access_token", accessToken).apply()
     }
 
     fun saveRefreshToken(refreshToken: String){
-        prefs.edit().putString(REFRESH_TOKEN_KEY, refreshToken).apply()
+        prefs.edit().putString("refresh_token", refreshToken).apply()
     }
 
     fun saveUserId(user_id: String){
-        prefs.edit().putString(USER_ID, user_id).apply()
+        prefs.edit().putString("user_id", user_id).apply()
     }
 
     fun getAccessToken(): String? {
-        return prefs.getString(ACCESS_TOKEN_KEY, null)
+        return prefs.getString("access_token", null)
     }
 
     fun getRefreshToken(): String? {
-        return prefs.getString(REFRESH_TOKEN_KEY, null)
+        return prefs.getString("refresh_token", null)
     }
 
     fun getUserId(): String? {
-        return prefs.getString(USER_ID, null)
+        return prefs.getString("user_id", null)
     }
 
     fun clearTokens() {
-        prefs.edit().remove(ACCESS_TOKEN_KEY).apply()
-        prefs.edit().remove(REFRESH_TOKEN_KEY).apply()
-        prefs.edit().remove(USER_ID).apply()
+        prefs.edit().remove("access_token").apply()
+        prefs.edit().remove("refresh_token").apply()
+        prefs.edit().remove("user_id").apply()
     }
 }

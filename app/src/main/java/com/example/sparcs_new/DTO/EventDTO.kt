@@ -1,7 +1,6 @@
 package com.example.sparcs_new.DTO
 
 import com.google.gson.annotations.SerializedName
-import java.time.LocalDateTime
 
 
 data class EventResponseDTO(
@@ -22,8 +21,10 @@ data class AttendeesResponseDTO(
     @SerializedName("username") val username: String
 )
 
-data class GetUserEventsDTO(
-    @SerializedName("user_id") val user_id: String = "",
-    @SerializedName("offset") val offset : Int = 0,
-    @SerializedName("limit") val limit : Int = 10
+data class CommentResponseDTO(
+    @SerializedName("user_id") val user_id: String,
+    @SerializedName("content") val content: String,
+    @SerializedName("created_at") val created_at: String,
+    @SerializedName("event_id") val event_id: String,
+    @SerializedName("id") val id: String
 )

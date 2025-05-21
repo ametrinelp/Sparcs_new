@@ -1,5 +1,6 @@
 package com.example.sparcs_new.ui.theme.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
@@ -24,7 +24,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -47,36 +46,37 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.sparcs_new.R
-import com.example.sparcs_new.ViewModel.AppViewModelFactory
-import com.example.sparcs_new.ViewModel.AuthManager
-import com.example.sparcs_new.ViewModel.GetEventState
-import com.example.sparcs_new.ViewModel.GetUserViewModel
-import com.example.sparcs_new.ViewModel.UpdateNicknameViewModel
+import com.example.sparcs_new.viewModel.AppViewModelFactory
+import com.example.sparcs_new.viewModel.AuthManager
+import com.example.sparcs_new.viewModel.GetUserViewModel
+import com.example.sparcs_new.viewModel.ThemeViewModel
+import com.example.sparcs_new.viewModel.UpdateNicknameViewModel
 
-//로그인 했을 때, 안 했을 때 구분해야됨
-//다크모드 정도는 준비해야하지 않으까
 @Composable
-fun Account (
-    getViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current)) )
+fun Account ()
 {
+    //viewmodel
+    val getViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val themeViewModel: ThemeViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    //variable
     val username by getViewModel.username.collectAsState()
     val nickname by getViewModel.nickname.collectAsState()
     val isUserInfoLoaded by getViewModel.isUserInfoLoaded.collectAsState()
-
     val openDialog = remember { mutableStateOf(false) }
-    LaunchedEffect(username) {
-        if (isUserInfoLoaded && username == ""){
+    val showThemeDialog = remember { mutableStateOf(false) }
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+
+    LaunchedEffect(username){
+        if (isUserInfoLoaded && username == "") {
             AuthManager.setUnauthenticated()
         }
     }
-
     LaunchedEffect(Unit) {
-        getViewModel.GetUserInfo("user_query_value", "nick_query_value")
+        getViewModel.getUserInfo("user_query_value", "nick_query_value")
     }
-
-
-    Surface (color = MaterialTheme.colorScheme.background ){
+    Surface (color = MaterialTheme.colorScheme.background){
         Column(modifier = Modifier.fillMaxSize()) {
             Card(
                 shape = RoundedCornerShape(8.dp),
@@ -101,7 +101,6 @@ fun Account (
                             modifier = Modifier.size(80.dp)
                         )
                         Column {
-
                             Text(
                                 text = username,
                                 modifier = Modifier.padding(start = 8.dp),
@@ -118,7 +117,7 @@ fun Account (
                     }
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
+                        contentDescription = "닉네임 수정하기 버튼",
                         modifier = Modifier
                             .align(CenterEnd)
                             .padding(dimensionResource(R.dimen.padding_medium))
@@ -147,35 +146,6 @@ fun Account (
                         shape = RoundedCornerShape(4.dp)
                     )
             ) {
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(start = 4.dp)
-                        .fillMaxWidth()
-                        .clickable { }
-                ){
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = null
-                    )
-                    Text(
-                        text = "내가 참여했던 방",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
-                    )
-                }
-            }
-            Card(
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.onSecondary),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 50.dp, end = 50.dp, top = 10.dp, bottom = 10.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-            ) {
                 Row (verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(start = 4.dp)
@@ -188,7 +158,7 @@ fun Account (
                         contentDescription = null
                     )
                     Text(
-                        text = "로그 아웃 하기",
+                        text = "로그아웃하기",
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
                     )
@@ -210,7 +180,7 @@ fun Account (
                         .padding(start = 4.dp)
                         .fillMaxWidth()
                         .clickable {
-
+                            showThemeDialog.value = true
                         }){
                     Icon(
                         imageVector = Icons.Default.Settings,
@@ -221,27 +191,41 @@ fun Account (
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
                     )
+
+                    if (showThemeDialog.value) {
+                        ThemeSettingDialog(
+                            isDarkTheme = isDarkTheme,
+                            onDismissRequest = { showThemeDialog.value = false },
+                            onToggleTheme = { themeViewModel.toggleTheme() }
+                        )
+                    }
                 }
             }
         }
-
     }
 }
+
 
 @Composable
 fun EditDialogPop(
     onDismissRequest: () -> Unit,
     username : String,
-    nickname : String,
-    updateNicknameViewModel: UpdateNicknameViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current)),
-    getViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    nickname : String
 ){
-    var _nickname by remember { mutableStateOf("") }
-    LaunchedEffect(Unit){
-        if (_nickname == "") {
-            _nickname = nickname
+    //viewmodel
+    val updateNicknameViewModel: UpdateNicknameViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+    val getViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
+
+    //variable
+    var setNickname by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel(factory = AppViewModelFactory(LocalContext.current))) {
+        if (setNickname == "") {
+            setNickname = nickname
         }
     }
+
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Surface(
@@ -270,7 +254,6 @@ fun EditDialogPop(
                                 .align(Center)
                                 .size(70.dp)
                         )
-
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = null,
@@ -279,10 +262,8 @@ fun EditDialogPop(
                                 .padding(end = 2.dp)
                                 .clickable {
                                     onDismissRequest()
-                                }
-                        )
+                                })
                     }
-
                 }
 
                 Column (
@@ -314,9 +295,9 @@ fun EditDialogPop(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         BasicTextField(
-                            value = _nickname,
+                            value = setNickname,
                             onValueChange = {
-                                _nickname= it },
+                                setNickname= it },
                             modifier = Modifier
                                 .fillMaxWidth(),
                             textStyle = MaterialTheme.typography.bodySmall.copy(
@@ -343,7 +324,6 @@ fun EditDialogPop(
                     }
                 }
 
-
                 Box (
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.background)
@@ -355,10 +335,13 @@ fun EditDialogPop(
                         ),
                         shape = RoundedCornerShape(6.dp),
                         onClick = {
-                            onDismissRequest()
-                            updateNicknameViewModel.updateUserNickname(_nickname)
-                            getViewModel.GetUserInfo("user_query_value", "nick_query_value")
-
+                            if (setNickname == ""){
+                                Toast.makeText(context, "닉네임은 공백이 될 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            }else {
+                                onDismissRequest()
+                                updateNicknameViewModel.updateUserNickname(setNickname)
+                                getViewModel.getUserInfo("user_query_value", "nick_query_value")
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -370,26 +353,53 @@ fun EditDialogPop(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-
                 }
-
-
-
             }
-
-
-
         }
-
     }
 }
 
-@Preview
 @Composable
-fun Previw(){
-    EditDialogPop(
-        onDismissRequest = { },
-        username = "user",
-        nickname = "nick"
-    )
+fun ThemeSettingDialog(
+    isDarkTheme: Boolean,
+    onDismissRequest: () -> Unit,
+    onToggleTheme: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = if (isDarkTheme) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("테마 설정", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.scrim)
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                ) {
+                    Text(
+                        text = "다크모드 켜기",
+                        color = MaterialTheme.colorScheme.scrim)
+                    androidx.compose.material3.Switch(
+                        checked = isDarkTheme,
+                        onCheckedChange = { onToggleTheme() }
+                    )
+                }
+
+                Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("닫기")
+                }
+            }
+        }
+    }
 }

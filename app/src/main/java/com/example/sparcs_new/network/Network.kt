@@ -1,7 +1,8 @@
-// 파일: network/NetworkSetModule.kt
 package com.example.sparcs_new.network
 
 import android.content.Context
+import android.util.Log
+import androidx.navigation.NavHostController
 import com.example.sparcs_new.data.DataTokenStore
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -9,16 +10,18 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
+
 
 object NetworkSetModule {
 
     fun provideAuthApi(context: Context): AuthApiService {
         val tokenStore = DataTokenStore(context)
         val noAuthApi = provideAuthApiWithoutToken()
-        val authenticator = TokenAuthenticator(tokenStore, noAuthApi)
+        val authInterceptor = AuthInterceptor(tokenStore, noAuthApi)  // navController 전달
 
-        val authInterceptor = Interceptor { chain ->
-            val original = chain.request()
+        val header = Interceptor {
+            val original = it.request()
             val requestBuilder = original.newBuilder()
 
             runBlocking {
@@ -28,12 +31,12 @@ object NetworkSetModule {
                 }
             }
 
-            chain.proceed(requestBuilder.build())
+            it.proceed(requestBuilder.build())
         }
 
         val client = OkHttpClient.Builder()
-            .authenticator(authenticator)
             .addInterceptor(authInterceptor)
+            .addInterceptor(header)
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
@@ -42,6 +45,7 @@ object NetworkSetModule {
         return Retrofit.Builder()
             .baseUrl("http://210.117.237.78:8000/")
             .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(ScalarsConverterFactory.create())
             .client(client)
             .build()
             .create(AuthApiService::class.java)
