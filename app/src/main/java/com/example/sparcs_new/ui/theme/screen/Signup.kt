@@ -1,5 +1,6 @@
 package com.example.sparcs_new.ui.theme.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -63,6 +64,7 @@ fun SignupScreen(
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var nickname by remember { mutableStateOf("") }
+        val context = LocalContext.current
         val currentLoginState by signViewModel.loginState.collectAsState()
 
         val usernameInteractionSource = remember { MutableInteractionSource() }
@@ -259,21 +261,16 @@ fun SignupScreen(
                     )
 
                     when (currentLoginState) {
-                        LoginState.Idle -> Text("Please enter your credentials")
+                        LoginState.Idle -> {}
                         LoginState.Loading -> CircularProgressIndicator()
                         is LoginState.Success -> {
-                            Text(
-                                "Signup Successful! AccessToken: ${(currentLoginState as LoginState.Success).response.access_token}, " +
-                                        "refresh_token :${(currentLoginState as LoginState.Success).response.refresh_token}"
-                            )
+                            Toast.makeText(context, "로그인을 완료하였습니다.", Toast.LENGTH_SHORT).show()
                             loginViewModel.loginSuccess()
                             navController.navigate(route = SparcsScreen.Login.name)
                         }
 
-                        is LoginState.Error -> Text(
-                            "Signup Failed: ${(currentLoginState as LoginState.Error).message}",
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        is LoginState.Error ->
+                            Toast.makeText(context, "로그인에 실패하였습니다.${(currentLoginState as LoginState.Error).message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
