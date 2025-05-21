@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,6 +47,7 @@ import androidx.navigation.NavHostController
 import com.example.sparcs_new.DTO.EventResponseDTO
 import com.example.sparcs_new.R
 import com.example.sparcs_new.SparcsScreen
+import com.example.sparcs_new.data.PreferencesHelper
 import com.example.sparcs_new.viewModel.AppViewModelFactory
 import com.example.sparcs_new.viewModel.GetAttendeesViewModel
 import com.example.sparcs_new.viewModel.GetEventState
@@ -60,6 +63,36 @@ fun StartScreen(navController : NavHostController) {
     val eventState by getEventsViewModel.eventState.collectAsState()
     val offset by getEventsViewModel.offset.collectAsState()
     val currentPage by getEventsViewModel.currentPage.collectAsState()
+    val context = LocalContext.current
+
+    val preferencesHelper = remember { PreferencesHelper(context) }
+    var showUsageDialog by remember { mutableStateOf(preferencesHelper.isFirstLaunch()) }
+
+    if (showUsageDialog) {
+        AlertDialog(
+            onDismissRequest = { showUsageDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    preferencesHelper.setFirstLaunchDone()
+                    showUsageDialog = false
+                }) {
+                    Text("확인")
+                }
+            },
+            title = {
+                Text(
+                    text= "사용법 안내",
+                    color = MaterialTheme.colorScheme.scrim) },
+            text = {
+                Text(
+                    text = "\uD83D\uDD0D \t이벤트 목록을 탐색하고 참여하세요!\n" +
+                            "\uD83D\uDDD3\uFE0F \t이벤트를 클릭하면 날짜, 시간, 장소, 설명 등 상세한 정보를 확인할 수 있습니다.\n" +
+                            "✅ \t\"참석\", \"불참\" 등을 선택해 자신의 참석 여부를 전달할 수 있습니다.\n" +
+                            "\uD83D\uDC65 \t참가한 사람들의 리스트를 확인할 수 있습니다.\n",
+                    color = MaterialTheme.colorScheme.scrim) }
+        )
+    }
+
     Scaffold{
         Column (
             modifier = Modifier
@@ -125,12 +158,15 @@ fun EventItem(
     offset:Int
 ){
     val openDialog = remember { mutableStateOf(false) }
+    val isLoading by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .padding(dimensionResource(R.dimen.padding_small))
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(10.dp))
             .clickable {
-                openDialog.value = true
+                if (!isLoading) {
+                    openDialog.value = true
+                }
             }
     ) {
         Column(
@@ -180,12 +216,11 @@ fun EventItem(
 
         }
     }
-    if (openDialog.value) {
+    if (openDialog.value&& !isLoading) {
         val getAttendeesViewModel: GetAttendeesViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
         getAttendeesViewModel.loadAttendees(event.event_id)
-
-        val isLoading by getAttendeesViewModel.isLoading.collectAsState()
-        if (!isLoading) {
+        val isLoadingState by getAttendeesViewModel.isLoading.collectAsState()
+        if (!isLoadingState) {
             val route = SparcsScreen.createRoute(event.event_id, offset)
             navController.navigate(route)
 
@@ -194,6 +229,10 @@ fun EventItem(
     }
 
 }
+
+
+
+
 @Composable
 fun EventInformation(
     string: String,
@@ -265,7 +304,7 @@ fun PaginationBar(
                     onNext()
                 }
                 .padding(8.dp),
-            color = if (isNextEnabled) Color.Black else Color.Gray
+            color = if (isNextEnabled) MaterialTheme.colorScheme.scrim else MaterialTheme.colorScheme.outline
         )
     }
 }

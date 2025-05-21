@@ -251,40 +251,48 @@ class ExitEventViewModel(
 
 }
 
-class GetUserEventsViewModel(
-    private val authApiService: AuthApiService
-) : ViewModel()
-{
-    private val _eventState = MutableStateFlow<GetEventState>(GetEventState.Idle)
-    val eventState: StateFlow<GetEventState> = _eventState
-    fun getUserEventInfo(userid : String) {
-        viewModelScope.launch {
-            _eventState.value = GetEventState.Loading
-            try {
-                val events = authApiService.getUserEvents(userid ,0, 10)
-                _eventState.value = GetEventState.Success(events)
-            } catch (e: Exception) {
-                _eventState.value = GetEventState.Error(e.message ?: "나의 이벤트 로딩 실패")
-
-            }
-        }
-    }
-}
-
 class GetUserJoinedEventsViewModel(
     private val authApiService: AuthApiService
 ) : ViewModel()
 {
     private val _eventState = MutableStateFlow<GetEventState>(GetEventState.Idle)
     val eventState: StateFlow<GetEventState> = _eventState
-    fun getJoinedEventInfo() {
+
+    private val _offset = MutableStateFlow(0)
+    val offset: StateFlow<Int> = _offset
+
+    private val _currentPage = MutableStateFlow(1)
+    val currentPage: StateFlow<Int> = _currentPage
+
+    private val _isLoading = MutableStateFlow(false)
+
+    fun goToNextPage() {
+        _offset.value += 10
+        _currentPage.value += 1
+        getJoinedEventInfo(_offset.value)
+    }
+
+    fun goToPreviousPage() {
+        if (_offset.value >= 10 && _currentPage.value > 1) {
+            _offset.value -= 10
+            _currentPage.value -= 1
+            getJoinedEventInfo(_offset.value)
+        }
+    }
+
+    fun getJoinedEventInfo(offset:Int) {
         viewModelScope.launch {
             _eventState.value = GetEventState.Loading
             try {
-                val events = authApiService.getUserJoinedEvent(0, 10)
+                _isLoading.value = true
+                _offset.value = offset
+                _eventState.value = GetEventState.Loading
+                val events = authApiService.getUserJoinedEvent(offset, 10)
                 _eventState.value = GetEventState.Success(events)
             } catch (e: Exception) {
                 _eventState.value = GetEventState.Error(e.message ?: "이벤트 로딩 실패")
+            } finally {
+                _isLoading.value = false
             }
         }
     }

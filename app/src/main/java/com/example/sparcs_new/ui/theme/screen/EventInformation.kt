@@ -112,7 +112,7 @@ fun EventInformationScreen(
         val userId by getViewModel.userid.collectAsState()
         val context = LocalContext.current
 
-        Log.d("ADAdasd", offset.toString())
+
         LaunchedEffect(Unit) {
             getEventsViewModel.getEventInfo(offset)
             getAttendeesViewModel.loadAttendees(eventId)

@@ -39,7 +39,6 @@ import com.example.sparcs_new.DTO.EventResponseDTO
 import com.example.sparcs_new.SparcsScreen
 import com.example.sparcs_new.viewModel.AppViewModelFactory
 import com.example.sparcs_new.viewModel.GetAttendeesViewModel
-import com.example.sparcs_new.viewModel.GetEventsViewModel
 import com.example.sparcs_new.viewModel.GetUserJoinedEventsViewModel
 import com.example.sparcs_new.viewModel.GetUserViewModel
 
@@ -49,12 +48,8 @@ fun MyEvent(navController : NavHostController
     val getUserJoinedEventViewModel: GetUserJoinedEventsViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
     val getUserViewModel: GetUserViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
     val eventState by getUserJoinedEventViewModel.eventState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        getUserViewModel.getUserInfo("user_query_value", "nick_query_value")
-        getUserJoinedEventViewModel.getJoinedEventInfo()
-    }
-
+    val offset by getUserJoinedEventViewModel.offset.collectAsState()
+    val currentPage by getUserJoinedEventViewModel.currentPage.collectAsState()
 
        Scaffold{
             Column (
@@ -63,7 +58,12 @@ fun MyEvent(navController : NavHostController
                     .background(MaterialTheme.colorScheme.background)
             ){
                 when (eventState) {
-                    GetEventState.Idle -> {}
+                    GetEventState.Idle -> {
+                        LaunchedEffect(Unit) {
+                            getUserViewModel.getUserInfo("user_query_value", "nick_query_value")
+                            getUserJoinedEventViewModel.getJoinedEventInfo(offset)
+                        }
+                    }
                     GetEventState.Loading -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
@@ -71,6 +71,14 @@ fun MyEvent(navController : NavHostController
                     }
                     is GetEventState.Success -> {
                         val events = (eventState as GetEventState.Success).response
+
+                        PaginationBar(
+                            currentPage = currentPage,
+                            events = events,
+                            onNext = { getUserJoinedEventViewModel.goToNextPage() },
+                            onPrev = { getUserJoinedEventViewModel.goToPreviousPage() }
+                        )
+
                         LazyColumn(
                             contentPadding = it,
                             modifier = Modifier
@@ -78,7 +86,7 @@ fun MyEvent(navController : NavHostController
                                 .padding(dimensionResource(R.dimen.padding_large))
                         ) {
                             items(events){ event ->
-                                InfoMyItem(event = event, navController = navController)
+                                InfoMyItem(event = event, navController = navController, offset = offset)
                             }
                         }
                     }
@@ -95,10 +103,9 @@ fun MyEvent(navController : NavHostController
 //modifier.clickable
 @Composable
 fun InfoMyItem(event : EventResponseDTO,
-               navController:NavHostController){
+               navController:NavHostController,
+               offset:Int){
     val openDialog = remember { mutableStateOf(false) }
-    val getEventsViewModel: GetEventsViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
-    val offset by getEventsViewModel.offset.collectAsState()
 
     Card(
         modifier = Modifier

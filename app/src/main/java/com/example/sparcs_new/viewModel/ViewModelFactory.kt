@@ -24,9 +24,6 @@ class AppViewModelFactory(
             modelClass.isAssignableFrom(GetUserViewModel::class.java) -> {
                 GetUserViewModel(authApi) as T
             }
-            modelClass.isAssignableFrom(GetUserEventsViewModel::class.java) -> {
-                GetUserEventsViewModel(authApi) as T
-            }
             modelClass.isAssignableFrom(GetEventsViewModel::class.java) -> {
                 GetEventsViewModel(authApi) as T
             }
