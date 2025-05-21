@@ -21,11 +21,12 @@ class AuthInterceptor(
     private val tokenStore: DataTokenStore,
     private val authApi: AuthApiService
 ) : Interceptor {
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
 
-        if (response.code == 401) {
+        if (response.code == 401 || response.code == 403) {
             return runBlocking {
                 val refreshToken = tokenStore.getRefreshToken()
                 if (refreshToken == null) {

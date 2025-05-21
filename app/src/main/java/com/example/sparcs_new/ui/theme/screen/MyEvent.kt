@@ -51,6 +51,7 @@ fun MyEvent(navController : NavHostController
     val offset by getUserJoinedEventViewModel.offset.collectAsState()
     val currentPage by getUserJoinedEventViewModel.currentPage.collectAsState()
 
+
        Scaffold{
             Column (
                 modifier = Modifier

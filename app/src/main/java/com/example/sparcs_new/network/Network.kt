@@ -18,7 +18,7 @@ object NetworkSetModule {
     fun provideAuthApi(context: Context): AuthApiService {
         val tokenStore = DataTokenStore(context)
         val noAuthApi = provideAuthApiWithoutToken()
-        val authInterceptor = AuthInterceptor(tokenStore, noAuthApi)  // navController 전달
+        val authInterceptor = AuthInterceptor(tokenStore, noAuthApi)
 
         val header = Interceptor {
             val original = it.request()
