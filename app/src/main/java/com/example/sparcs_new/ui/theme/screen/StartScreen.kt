@@ -283,7 +283,7 @@ fun PaginationBar(
     onPrev: () -> Unit
 ) {
     val isPrevEnabled = currentPage > 1
-    val isNextEnabled = events.size >= 10
+    val isNextEnabled = events.size > 10
 
     Row(
         horizontalArrangement = Arrangement.Center,

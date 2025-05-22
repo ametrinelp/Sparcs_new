@@ -2,8 +2,8 @@
     <string name="app_name">스팟스</string>
     <string name="start">참여할 수 있는 팟</string>
     <string name="auth">로그인 페이지</string>
-    <string name="my_event">나의 방</string>
-    <string name="new_event">방 개설하기</string>
+    <string name="my_event">나의 팟</string>
+    <string name="new_event">팟 개설하기</string>
     <string name="event_info">event info</string>
     <string name="account">마이페이지</string>
     <string name="login">로그인</string>

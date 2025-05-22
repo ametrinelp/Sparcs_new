@@ -136,7 +136,7 @@ fun EventInformationScreen(
         @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
         Column {
             TopAppBar(
-                title = { Text("이벤트ㄴㄷ 상세") },
+                title = { Text("이벤트 상세") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceTint
                 ),
