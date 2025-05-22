@@ -68,6 +68,7 @@ fun StartScreen(navController : NavHostController) {
     val preferencesHelper = remember { PreferencesHelper(context) }
     var showUsageDialog by remember { mutableStateOf(preferencesHelper.isFirstLaunch()) }
 
+    //처음 실행 시 설명서
     if (showUsageDialog) {
         AlertDialog(
             onDismissRequest = { showUsageDialog = false },
@@ -216,17 +217,22 @@ fun EventItem(
 
         }
     }
-    if (openDialog.value&& !isLoading) {
-        val getAttendeesViewModel: GetAttendeesViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
-        getAttendeesViewModel.loadAttendees(event.event_id)
-        val isLoadingState by getAttendeesViewModel.isLoading.collectAsState()
-        if (!isLoadingState) {
-            val route = SparcsScreen.createRoute(event.event_id, offset)
-            navController.navigate(route)
+    if (openDialog.value) {
+        val getAttendeesViewModel: GetAttendeesViewModel =
+            viewModel(factory = AppViewModelFactory(LocalContext.current))
 
+        LaunchedEffect(Unit) {
+            getAttendeesViewModel.loadAttendees(event.event_id)
         }
 
+        val isLoadingAt by getAttendeesViewModel.isLoading.collectAsState()
+        if (!isLoadingAt) {
+            openDialog.value = false
+            val route = SparcsScreen.createRoute(event.event_id, offset)
+            navController.navigate(route)
+        }
     }
+
 
 }
 

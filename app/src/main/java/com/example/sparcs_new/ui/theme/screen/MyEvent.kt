@@ -51,7 +51,6 @@ fun MyEvent(navController : NavHostController
     val offset by getUserJoinedEventViewModel.offset.collectAsState()
     val currentPage by getUserJoinedEventViewModel.currentPage.collectAsState()
 
-
        Scaffold{
             Column (
                 modifier = Modifier
@@ -161,14 +160,20 @@ fun InfoMyItem(event : EventResponseDTO,
         }
     }
     if (openDialog.value) {
-        val getAttendeesViewModel: GetAttendeesViewModel = viewModel(factory = AppViewModelFactory(LocalContext.current))
-        getAttendeesViewModel.loadAttendees(event.event_id)
+        val getAttendeesViewModel: GetAttendeesViewModel =
+            viewModel(factory = AppViewModelFactory(LocalContext.current))
+
+        LaunchedEffect(Unit) {
+            getAttendeesViewModel.loadAttendees(event.event_id)
+        }
+
         val isLoading by getAttendeesViewModel.isLoading.collectAsState()
         if (!isLoading) {
+            openDialog.value = false
             val route = SparcsScreen.createRoute(event.event_id, offset)
             navController.navigate(route)
-
         }
     }
+
 
 }
