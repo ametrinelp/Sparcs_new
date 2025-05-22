@@ -7,6 +7,7 @@ import com.example.sparcs_new.DTO.CommentResponseDTO
 import com.example.sparcs_new.DTO.EventResponseDTO
 import com.example.sparcs_new.DTO.LoginResponseDTO
 import com.example.sparcs_new.DTO.UserInfoResponseDTO
+import com.example.sparcs_new.data.AuthManager
 import com.example.sparcs_new.data.DataTokenStore
 import com.example.sparcs_new.data.ThemePreference
 import com.example.sparcs_new.network.AuthApiService

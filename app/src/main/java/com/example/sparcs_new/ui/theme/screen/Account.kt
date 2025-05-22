@@ -47,7 +47,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sparcs_new.R
 import com.example.sparcs_new.viewModel.AppViewModelFactory
-import com.example.sparcs_new.viewModel.AuthManager
+import com.example.sparcs_new.data.AuthManager
 import com.example.sparcs_new.viewModel.GetUserViewModel
 import com.example.sparcs_new.viewModel.ThemeViewModel
 import com.example.sparcs_new.viewModel.UpdateNicknameViewModel

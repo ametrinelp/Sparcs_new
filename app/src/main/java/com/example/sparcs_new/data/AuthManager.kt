@@ -1,4 +1,4 @@
-package com.example.sparcs_new.viewModel
+package com.example.sparcs_new.data
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

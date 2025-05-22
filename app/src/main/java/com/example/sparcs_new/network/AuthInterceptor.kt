@@ -2,7 +2,7 @@ package com.example.sparcs_new.network
 
 import android.util.Log
 import com.example.sparcs_new.data.DataTokenStore
-import com.example.sparcs_new.viewModel.AuthManager
+import com.example.sparcs_new.data.AuthManager
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response

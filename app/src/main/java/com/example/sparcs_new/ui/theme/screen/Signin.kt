@@ -41,7 +41,7 @@ import androidx.navigation.NavHostController
 import com.example.sparcs_new.R
 import com.example.sparcs_new.SparcsScreen
 import com.example.sparcs_new.viewModel.AppViewModelFactory
-import com.example.sparcs_new.viewModel.AuthManager
+import com.example.sparcs_new.data.AuthManager
 import com.example.sparcs_new.viewModel.LoginState
 import com.example.sparcs_new.viewModel.LoginViewModel
 import androidx.compose.foundation.text.KeyboardActions

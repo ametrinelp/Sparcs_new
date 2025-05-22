@@ -35,8 +35,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.sparcs_new.viewModel.AuthManager
-import com.example.sparcs_new.viewModel.AuthState
+import com.example.sparcs_new.data.AuthManager
+import com.example.sparcs_new.data.AuthState
 import com.example.sparcs_new.ui.theme.screen.Account
 import com.example.sparcs_new.ui.theme.screen.EventInformationScreen
 import com.example.sparcs_new.ui.theme.screen.MyEvent
