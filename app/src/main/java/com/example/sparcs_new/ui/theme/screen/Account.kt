@@ -72,7 +72,7 @@ fun Account ()
         }
     }
     LaunchedEffect(Unit) {
-        getViewModel.getUserInfo("user_query_value", "nick_query_value")
+        getViewModel.getUserInfo()
     }
     Surface (color = MaterialTheme.colorScheme.background){
         Column(modifier = Modifier.fillMaxSize()) {
@@ -338,7 +338,7 @@ fun EditDialogPop(
                             }else {
                                 onDismissRequest()
                                 updateNicknameViewModel.updateUserNickname(setNickname)
-                                getViewModel.getUserInfo("user_query_value", "nick_query_value")
+                                getViewModel.getUserInfo()
                             }
                         },
                         colors = ButtonDefaults.buttonColors(

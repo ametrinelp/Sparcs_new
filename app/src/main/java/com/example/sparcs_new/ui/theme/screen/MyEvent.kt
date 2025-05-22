@@ -51,56 +51,54 @@ fun MyEvent(navController : NavHostController
     val offset by getUserJoinedEventViewModel.offset.collectAsState()
     val currentPage by getUserJoinedEventViewModel.currentPage.collectAsState()
 
-    
-       Scaffold{
-            Column (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ){
-                when (eventState) {
-                    GetEventState.Idle -> {
-                        LaunchedEffect(Unit) {
-                            getUserViewModel.getUserInfo("user_query_value", "nick_query_value")
-                            getUserJoinedEventViewModel.getJoinedEventInfo(offset)
-                        }
-                    }
-                    GetEventState.Loading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                    is GetEventState.Success -> {
-                        val events = (eventState as GetEventState.Success).response
 
-                        PaginationBar(
-                            currentPage = currentPage,
-                            events = events,
-                            onNext = { getUserJoinedEventViewModel.goToNextPage() },
-                            onPrev = { getUserJoinedEventViewModel.goToPreviousPage() }
-                        )
-
-                        LazyColumn(
-                            contentPadding = it,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(dimensionResource(R.dimen.padding_large))
-                        ) {
-                            items(events){ event ->
-                                InfoMyItem(event = event, navController = navController, offset = offset)
-                            }
+    Scaffold{
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ){
+            when (eventState) {
+                GetEventState.Idle -> {
+                    LaunchedEffect(Unit) {
+                        getUserViewModel.getUserInfo()
+                        getUserJoinedEventViewModel.getJoinedEventInfo(offset)
+                    }
+                }
+                GetEventState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is GetEventState.Success -> {
+                    val events = (eventState as GetEventState.Success).response
+                    PaginationBar(
+                        currentPage = currentPage,
+                        events = events,
+                        onNext = { getUserJoinedEventViewModel.goToNextPage() },
+                        onPrev = { getUserJoinedEventViewModel.goToPreviousPage() }
+                    )
+                    LazyColumn(
+                        contentPadding = it,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(dimensionResource(R.dimen.padding_large))
+                    ) {
+                        items(events){ event ->
+                            InfoMyItem(event = event, navController = navController, offset = offset)
                         }
                     }
-                    is GetEventState.Error -> {
-                        val errorMessage = (eventState as GetEventState.Error).message
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "Error: $errorMessage")
-                        }
+                }
+                is GetEventState.Error -> {
+                    val errorMessage = (eventState as GetEventState.Error).message
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "Error: $errorMessage")
                     }
                 }
             }
         }
     }
+}
 //modifier.clickable
 @Composable
 fun InfoMyItem(event : EventResponseDTO,

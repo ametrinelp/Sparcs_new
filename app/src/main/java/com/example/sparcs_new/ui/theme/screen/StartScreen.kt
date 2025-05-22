@@ -103,7 +103,7 @@ fun StartScreen(navController : NavHostController) {
             when (eventState) {
                 GetEventState.Idle -> {
                     LaunchedEffect(Unit) {
-                        getUserViewModel.getUserInfo("user_query_value", "nick_query_value")
+                        getUserViewModel.getUserInfo()
                         getEventsViewModel.getEventInfo(offset)
                     }
                 }

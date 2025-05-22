@@ -87,13 +87,13 @@ class GetUserViewModel(
     private val _isUserInfoLoaded = MutableStateFlow(false)
     val isUserInfoLoaded: StateFlow<Boolean> = _isUserInfoLoaded.asStateFlow()
 
-    fun getUserInfo(userQuery: String, nickQuery: String) {
+    fun getUserInfo() {
         viewModelScope.launch {
             _getState.value = GetState.Loading
             _isUserInfoLoaded.value = false
             try {
-                val userInfoResponse = authApiService.getUser(userQuery, nickQuery)
-                val userIdInfoResponse = authApiService.getUserId(userQuery)
+                val userInfoResponse = authApiService.getUser()
+                val userIdInfoResponse = authApiService.getUserId()
                 _username.value = userInfoResponse.username
                 _nickname.value = userInfoResponse.nickname
                 _userid.value = userIdInfoResponse.id

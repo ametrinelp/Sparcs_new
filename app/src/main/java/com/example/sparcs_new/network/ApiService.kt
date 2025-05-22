@@ -33,13 +33,12 @@ interface AuthApiService {
     //유저 정보
     @GET("user")
     suspend fun getUser(
-        @Query("username") username: String,
-        @Query("nickname") nickname: String
+
     ): UserInfoResponseDTO
 
     @GET("user")
     suspend fun getUserId(
-        @Query("id") id: String
+//        @Query("id") id: String
     ): UserInfoResponseDTO
 
     @PATCH("user")

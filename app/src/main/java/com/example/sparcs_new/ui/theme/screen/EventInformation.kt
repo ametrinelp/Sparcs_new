@@ -103,7 +103,7 @@ fun EventInformationScreen(
         LaunchedEffect(Unit) {
             getEventsViewModel.getEventInfo(offset)
             getAttendeesViewModel.loadAttendees(eventId)
-            getViewModel.getUserInfo("user","name")
+            getViewModel.getUserInfo()
             getCommentViewModel.getCommentInfo(eventId)
         }
         LaunchedEffect(offset) {
