@@ -1,5 +1,5 @@
 package com.example.sparcs_new
-import android.util.Log
+
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -147,8 +147,6 @@ fun SparcsAppBar(
                 containerColor = MaterialTheme.colorScheme.surfaceTint
             )
         )
-    } else {
-
     }
 }
 

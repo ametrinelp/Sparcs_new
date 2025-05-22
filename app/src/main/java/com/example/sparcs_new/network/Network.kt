@@ -1,8 +1,6 @@
 package com.example.sparcs_new.network
 
 import android.content.Context
-import android.util.Log
-import androidx.navigation.NavHostController
 import com.example.sparcs_new.data.DataTokenStore
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor

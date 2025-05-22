@@ -1,7 +1,6 @@
 package com.example.sparcs_new.viewModel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sparcs_new.DTO.CommentResponseDTO

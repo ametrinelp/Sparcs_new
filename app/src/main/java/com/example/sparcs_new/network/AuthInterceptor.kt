@@ -1,20 +1,11 @@
 package com.example.sparcs_new.network
 
-import android.content.Context
-import android.content.Intent
 import android.util.Log
-import androidx.navigation.NavHostController
-import com.example.sparcs_new.DTO.RefreshTokenRequest
 import com.example.sparcs_new.data.DataTokenStore
 import com.example.sparcs_new.viewModel.AuthManager
 import kotlinx.coroutines.runBlocking
-import okhttp3.Authenticator
 import okhttp3.Interceptor
-import okhttp3.Request
 import okhttp3.Response
-import okhttp3.ResponseBody
-import okhttp3.Route
-
 
 
 class AuthInterceptor(

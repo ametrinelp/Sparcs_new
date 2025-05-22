@@ -76,13 +76,6 @@ interface AuthApiService {
         @Path("eventId") eventId: String
     ):String
 
-    @GET("users/{user_id}/events")
-    suspend fun getUserEvents(
-        @Path("user_id") userId: String,
-        @Query("offset") offset: Int,
-        @Query("limit") limit: Int
-    ): List<EventResponseDTO>
-
     @GET("events/joined")
     suspend fun getUserJoinedEvent(
         @Query("offset") offset: Int,
