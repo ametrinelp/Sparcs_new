@@ -169,7 +169,7 @@ fun SigninScreen(
                             decorationBox = { innerTextField ->
                                 if (password.isEmpty() && !passwordIsFocused) {
                                     Text(
-                                        text = "비밀 번호 입력(문자, 숫자, 특수문자 포함 8~20자)",
+                                        text = "비밀번호 입력(문자, 숫자, 특수문자 포함 8~20자)",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.scrim
                                     )
@@ -199,7 +199,7 @@ fun SigninScreen(
                 }
 
                 Text(
-                    text = "회원가입",
+                    text = "회원 가입",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(dimensionResource(R.dimen.padding_small))

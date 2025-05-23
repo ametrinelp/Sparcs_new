@@ -241,7 +241,7 @@ fun SignupScreen(
                             .padding(top = dimensionResource(R.dimen.padding_small))
                     ) {
                         Text(
-                            text = "회원가입",
+                            text = "회원 가입",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.background
                         )
@@ -263,7 +263,7 @@ fun SignupScreen(
                         LoginState.Idle -> {}
                         LoginState.Loading -> CircularProgressIndicator()
                         is LoginState.Success -> {
-                            Toast.makeText(context, "회원가입을 완료하였습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "회원 가입을 완료하였습니다.", Toast.LENGTH_SHORT).show()
                             loginViewModel.loginSuccess()
                             navController.navigate(route = SparcsScreen.Login.name)
                         }
