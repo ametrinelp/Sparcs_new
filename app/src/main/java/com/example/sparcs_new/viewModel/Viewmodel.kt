@@ -38,6 +38,9 @@ class LoginViewModel(
                 dataTokenStore.saveAccessToken(response.access_token)
                 dataTokenStore.saveRefreshToken(response.refresh_token)
 
+                AuthManager.setAuthenticated()
+                _loginState.value = LoginState.Success(response)
+
             } catch (e: HttpException) {
                 val errorBody = e.response()?.errorBody()?.string()
                 val errorMessage = try {
