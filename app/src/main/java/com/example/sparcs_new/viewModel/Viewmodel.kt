@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -37,15 +38,26 @@ class LoginViewModel(
                 dataTokenStore.saveAccessToken(response.access_token)
                 dataTokenStore.saveRefreshToken(response.refresh_token)
 
-                AuthManager.setAuthenticated()
-                _loginState.value = LoginState.Success(response)
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val errorMessage = try {
+                    val json = org.json.JSONObject(errorBody ?: "")
+                    val detail = json.optString("detail")
+
+                    when (detail) {
+                        "Invalid credentials" -> "아이디 또는 비밀번호가 잘못되었습니다."
+                        else -> detail.ifBlank { "로그인에 실패했습니다. (${e.code()})" }
+                    }
+                } catch (ex: Exception) {
+                    "로그인 실패 (${e.code()})"
+                }
+                _loginState.value = LoginState.Error(errorMessage)
+
             } catch (e: Exception) {
-                AuthManager.setUnauthenticated()
-                _loginState.value = LoginState.Error(e.message ?: "로그인 실패")
+                _loginState.value = LoginState.Error(e.message ?: "알 수 없는 오류로 로그인 실패")
             }
         }
     }
-
     fun loginSuccess(){
         _loginState.value = LoginState.Idle}
 }
@@ -63,8 +75,24 @@ class SignupViewModel(
             try {
                  val response = authApiService.postupUser(username, password, nickname)
                 _loginState.value = LoginState.Success(response)
+
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val errorMessage = try {
+                    val json = org.json.JSONObject(errorBody ?: "")
+                    val detail = json.optString("detail")
+
+                    when (detail) {
+                        "Password must be at least 8 characters long, include at least one special character, and one number." -> "비밀번호는 8자 이상이어야 하며 특수문자와 숫자를 포함해야 합니다."
+                        else -> detail.ifBlank { "회원 가입에 실패했습니다. (${e.code()})" }
+                    }
+                } catch (ex: Exception) {
+                    "회원 가입 실패 (${e.code()})"
+                }
+                _loginState.value = LoginState.Error(errorMessage)
+
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error(e.message ?: "error")
+                _loginState.value = LoginState.Error(e.message ?: "알 수 없는 오류로 회원 가입 실패")
             }
         }
     }

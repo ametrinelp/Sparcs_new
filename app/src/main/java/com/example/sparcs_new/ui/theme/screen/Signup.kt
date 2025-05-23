@@ -242,7 +242,8 @@ fun SignupScreen(
                     ) {
                         Text(
                             text = "회원가입",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.background
                         )
                     }
 
@@ -250,25 +251,28 @@ fun SignupScreen(
                         text = "로그인",
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
+                            .padding(dimensionResource(R.dimen.padding_small))
                             .clickable {
                                 navController.navigate(route = SparcsScreen.Login.name)
                             },
                         style = MaterialTheme.typography.bodySmall,
-                        textDecoration = TextDecoration.Underline,
+                        textDecoration = TextDecoration.Underline
                     )
 
                     when (currentLoginState) {
                         LoginState.Idle -> {}
                         LoginState.Loading -> CircularProgressIndicator()
                         is LoginState.Success -> {
-                            Toast.makeText(context, "로그인을 완료하였습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "회원가입을 완료하였습니다.", Toast.LENGTH_SHORT).show()
                             loginViewModel.loginSuccess()
                             navController.navigate(route = SparcsScreen.Login.name)
                         }
 
                         is LoginState.Error ->
-                            Toast.makeText(context, "로그인에 실패하였습니다.${(currentLoginState as LoginState.Error).message}", Toast.LENGTH_SHORT).show()
-                    }
+                                Toast.makeText(context,
+                                    (currentLoginState as LoginState.Error).message, Toast.LENGTH_SHORT).show()
+                            }
+
                 }
             }
         }

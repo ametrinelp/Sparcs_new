@@ -72,20 +72,34 @@ fun MyEvent(navController : NavHostController
                 }
                 is GetEventState.Success -> {
                     val events = (eventState as GetEventState.Success).response
-                    PaginationBar(
-                        currentPage = currentPage,
-                        events = events,
-                        onNext = { getUserJoinedEventViewModel.goToNextPage() },
-                        onPrev = { getUserJoinedEventViewModel.goToPreviousPage() }
-                    )
-                    LazyColumn(
-                        contentPadding = it,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(dimensionResource(R.dimen.padding_large))
-                    ) {
-                        items(events){ event ->
-                            InfoMyItem(event = event, navController = navController, offset = offset)
+                    if (events.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "참가한 방이 없습니다.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.scrim
+                            )
+                        }
+                    } else {
+                        PaginationBar(
+                            currentPage = currentPage,
+                            events = events,
+                            onNext = { getUserJoinedEventViewModel.goToNextPage() },
+                            onPrev = { getUserJoinedEventViewModel.goToPreviousPage() }
+                        )
+                        LazyColumn(
+                            contentPadding = it,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(dimensionResource(R.dimen.padding_large))
+                        ) {
+                            items(events) { event ->
+                                InfoMyItem(
+                                    event = event,
+                                    navController = navController,
+                                    offset = offset
+                                )
+                            }
                         }
                     }
                 }

@@ -191,19 +191,23 @@ fun SigninScreen(
                 ) {
                     Text(
                         text = "로그인",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.background
+
                     )
+
                 }
 
                 Text(
                     text = "회원가입",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
+                        .padding(dimensionResource(R.dimen.padding_small))
                         .clickable {
                             navController.navigate(route = SparcsScreen.Signup.name)
                         },
                     style = MaterialTheme.typography.bodySmall,
-                    textDecoration = TextDecoration.Underline,
+                    textDecoration = TextDecoration.Underline
                 )
 
                 when (currentLoginState) {
@@ -223,8 +227,11 @@ fun SigninScreen(
 //                        "Login Failed: ${(currentLoginState as LoginState.Error).message}",
 //                        color = MaterialTheme.colorScheme.error
 //                    )
-                        Toast.makeText(context, "로그인에 실패하였습니다.${(currentLoginState as LoginState.Error).message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,
+                            (currentLoginState as LoginState.Error).message, Toast.LENGTH_SHORT).show()
+
                 }
+
             }
         }
     }
